@@ -38,13 +38,38 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    label {
-      display: block;
-      margin: 10px 0;
-      font-size: 1.2em;
+    #groet, #bericht {
+      margin-top: 20px;
+      font-size: 1.1em;
     }
 
-    button {
+    .keuzeknoppen {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .keuzeknop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: #7B8D99;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .keuzeknop.selected {
+      background-color: #000;
+    }
+
+    button[type="submit"] {
       background-color: #007bff;
       color: white;
       font-size: 1em;
@@ -52,15 +77,14 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 20px;
     }
 
-    button:hover {
+    button[type="submit"]:hover {
       background-color: #0056b3;
     }
 
-    #resultaat,
-    #bericht {
+    #resultaat {
       margin-top: 20px;
     }
   </style>
@@ -70,9 +94,15 @@
   <h2 id="status">Bezig met locatie controleren...</h2>
 
   <form id="formulier" style="display: none;">
+    <p id="groet"></p>
     <p id="bericht"></p>
-    <label><input type="radio" name="actie" value="Inklokken" required /> Inklokken</label>
-    <label><input type="radio" name="actie" value="Uitklokken" required /> Uitklokken</label>
+    
+    <div class="keuzeknoppen">
+      <button type="button" class="keuzeknop" data-value="Inklokken">⏱️ Inklokken</button>
+      <button type="button" class="keuzeknop" data-value="Uitklokken">🛑 Uitklokken</button>
+    </div>
+
+    <input type="hidden" name="actie" id="actie" required />
     <button type="submit">Verzenden</button>
   </form>
 
@@ -95,6 +125,13 @@
       return R * c;
     }
 
+    function getMomentGroet() {
+      const uur = new Date().getHours();
+      if (uur < 12) return "Goedemorgen!";
+      if (uur < 18) return "Goedemiddag!";
+      return "Goedenavond!";
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude;
@@ -111,17 +148,31 @@
             minute: "2-digit",
           });
 
+          document.getElementById("groet").innerText = getMomentGroet();
           document.getElementById("bericht").innerText =
-            `Hallo, je doet op ${datum} om ${tijd} een registratieverzoek. Kies hieronder:`;
+            `Wil je op ${datum} om ${tijd} je tijd registreren? Geef dan hieronder aan of je wilt inklokken of uitklokken.`;
 
           const formulier = document.getElementById("formulier");
           formulier.style.display = "block";
 
+          const knoppen = document.querySelectorAll(".keuzeknop");
+          const hiddenInput = document.getElementById("actie");
+
+          knoppen.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              knoppen.forEach(b => b.classList.remove("selected"));
+              btn.classList.add("selected");
+              hiddenInput.value = btn.dataset.value;
+            });
+          });
+
           formulier.addEventListener("submit", function (e) {
             e.preventDefault();
-            const actie = document.querySelector(
-              'input[name="actie"]:checked'
-            ).value;
+            const actie = hiddenInput.value;
+            if (!actie) {
+              alert("Selecteer een actie.");
+              return;
+            }
 
             const formData = new URLSearchParams();
             formData.append("datum", datum);
@@ -138,9 +189,7 @@
             )
               .then((response) => response.text())
               .then((data) => {
-                document.getElementById(
-                  "formulier"
-                ).innerHTML = `<p>✔️ ${data}</p>`;
+                document.getElementById("formulier").innerHTML = `<p>✔️ ${data}</p>`;
               });
           });
         } else {
