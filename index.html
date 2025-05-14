@@ -7,14 +7,12 @@
 </head>
 <body>
   <h2>Locatie wordt gecontroleerd...</h2>
-
   <form id="formulier" style="display:none;">
     <p id="bericht"></p>
     <label><input type="radio" name="actie" value="Inklokken" required> Inklokken</label><br>
     <label><input type="radio" name="actie" value="Uitklokken" required> Uitklokken</label><br><br>
     <button type="submit">Verzenden</button>
   </form>
-
   <p id="resultaat"></p>
 
   <script>
@@ -28,68 +26,60 @@
       const Δφ = (lat2 - lat1) * Math.PI / 180;
       const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-      const a = Math.sin(Δφ / 2) ** 2 +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) ** 2;
+      const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
 
-    function toonFormulier(datum, tijd) {
-      document.getElementById("bericht").innerText =
-        `Hallo, je doet op ${datum} om ${tijd} een registratieverzoek. Kies hieronder:`;
-
-      const formulier = document.getElementById("formulier");
-      formulier.style.display = "block";
-
-      formulier.addEventListener("submit", function(e) {
-        e.preventDefault();
-        const actie = document.querySelector('input[name="actie"]:checked').value;
-
-        const formData = new URLSearchParams();
-        formData.append("datum", datum);
-        formData.append("tijd", tijd);
-        formData.append("actie", actie);
-        formData.append("locatie", "Jupiterlaan 103");
-
-        fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
-          method: "POST",
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) throw new Error("Verzending mislukt.");
-          return response.text();
-        })
-        .then(data => {
-          document.getElementById("formulier").innerHTML = `<p style="color:green;">✔️ ${data}</p>`;
-        })
-        .catch(err => {
-          document.getElementById("resultaat").innerHTML = `<p style="color:red;">❌ Fout: ${err.message}</p>`;
-        });
-      });
-    }
-
-    let locatieWatcher = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       pos => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         const nauwkeurigheid = pos.coords.accuracy;
         const afstand = getAfstand(lat, lng, werkLat, werkLng);
 
-        document.body.insertAdjacentHTML('beforeend', `
-          <p>📍 Je locatie: ${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
-          <p>📏 Afstand tot werkplek: ${afstand.toFixed(1)} meter</p>
-          <p>🎯 Nauwkeurigheid GPS: ±${nauwkeurigheid.toFixed(1)} meter</p>
-        `);
-
         if (afstand < 100 && nauwkeurigheid < 100) {
-          navigator.geolocation.clearWatch(locatieWatcher);
-
           const nu = new Date();
           const datum = nu.toLocaleDateString("nl-NL");
           const tijd = nu.toLocaleTimeString("nl-NL", { hour: '2-digit', minute: '2-digit' });
 
-          toonFormulier(datum, tijd);
+          document.getElementById("bericht").innerText =
+            `Hallo, je doet op ${datum} om ${tijd} een registratieverzoek. Kies hieronder:`;
+
+          const formulier = document.getElementById("formulier");
+          formulier.style.display = "block";
+
+          formulier.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const actie = document.querySelector('input[name="actie"]:checked').value;
+
+            const formData = new URLSearchParams();
+            formData.append("datum", datum);
+            formData.append("tijd", tijd);
+            formData.append("actie", actie);
+            formData.append("locatie", "Jupiterlaan 103");
+
+            fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
+              method: "POST",
+              body: formData
+            })
+            .then(response => {
+              if (!response.ok) throw new Error("Verzending mislukt.");
+              return response.text();
+            })
+            .then(data => {
+              document.getElementById("formulier").innerHTML = `<p style="color:green;">✔️ ${data}</p>`;
+            })
+            .catch(err => {
+              document.getElementById("resultaat").innerHTML = `<p style="color:red;">❌ Fout: ${err.message}</p>`;
+            });
+          });
+
+        } else {
+          document.body.innerHTML = `<h2>Niet op locatie.</h2>
+          <p>Jouw coördinaten: ${lat}, ${lng}</p>
+          <p>Afstand tot werkplek: ${afstand.toFixed(2)} meter</p>
+          <p>Gemeten nauwkeurigheid: ${nauwkeurigheid.toFixed(0)} meter</p>`;
         }
       },
       () => {
@@ -97,7 +87,7 @@
       },
       {
         enableHighAccuracy: true,
-        timeout: 15000,
+        timeout: 10000,
         maximumAge: 0
       }
     );
