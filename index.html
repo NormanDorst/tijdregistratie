@@ -1,15 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tijdregistratie</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
       margin: 0;
-      padding: 0px;
+      padding: 0;
       text-align: center;
       background-color: #f8f9fa;
       color: #333;
@@ -17,7 +17,7 @@
 
     img.logo {
       width: 150px;
-      margin: 0px auto;
+      margin: 0 auto;
       display: block;
     }
 
@@ -31,8 +31,11 @@
       padding: 20px;
       border-radius: 10px;
       max-width: 400px;
-      margin: 20px auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 0;
+      margin-bottom: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     label {
@@ -56,19 +59,20 @@
       background-color: #0056b3;
     }
 
-    #resultaat, #bericht {
+    #resultaat,
+    #bericht {
       margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <img src="breeclean-logo.webp" alt="Logo" class="logo">
+  <img src="breeclean-logo.webp" alt="Logo" class="logo" />
   <h2 id="status">Bezig met locatie controleren...</h2>
 
-  <form id="formulier" style="display:none;">
+  <form id="formulier" style="display: none;">
     <p id="bericht"></p>
-    <label><input type="radio" name="actie" value="Inklokken" required> Inklokken</label>
-    <label><input type="radio" name="actie" value="Uitklokken" required> Uitklokken</label>
+    <label><input type="radio" name="actie" value="Inklokken" required /> Inklokken</label>
+    <label><input type="radio" name="actie" value="Uitklokken" required /> Uitklokken</label>
     <button type="submit">Verzenden</button>
   </form>
 
@@ -80,63 +84,78 @@
 
     function getAfstand(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
-      const φ1 = lat1 * Math.PI/180;
-      const φ2 = lat2 * Math.PI/180;
-      const Δφ = (lat2 - lat1) * Math.PI/180;
-      const Δλ = (lon2 - lon1) * Math.PI/180;
-      const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+      const a =
+        Math.sin(Δφ / 2) ** 2 +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
     }
 
-    navigator.geolocation.getCurrentPosition(pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const afstand = getAfstand(lat, lng, werkLat, werkLng);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const afstand = getAfstand(lat, lng, werkLat, werkLng);
 
-      const statusElem = document.getElementById("status");
-      statusElem.remove(); // Verwijder de locatie-check tekst
+        document.getElementById("status").remove();
 
-      if (afstand < 1500) {
-        const nu = new Date();
-        const datum = nu.toLocaleDateString("nl-NL");
-        const tijd = nu.toLocaleTimeString("nl-NL", { hour: '2-digit', minute: '2-digit' });
-
-        document.getElementById("bericht").innerText =
-          `Hallo, je doet op ${datum} om ${tijd} een registratieverzoek. Kies hieronder:`;
-
-        const formulier = document.getElementById("formulier");
-        formulier.style.display = "block";
-
-        formulier.addEventListener("submit", function(e) {
-          e.preventDefault();
-          const actie = document.querySelector('input[name="actie"]:checked').value;
-
-          const formData = new URLSearchParams();
-          formData.append("datum", datum);
-          formData.append("tijd", tijd);
-          formData.append("actie", actie);
-          formData.append("locatie", "Jupiterlaan 103");
-
-          fetch("https://script.google.com/macros/s/AKfycbzoNBrQrfxweD7Yb8UlV1j1yo_wogLDPUTyzUkIFrFs0vXeebas2XtvsWBUZsxmwCF2/exec", {
-            method: "POST",
-            body: formData
-          })
-          .then(response => response.text())
-          .then(data => {
-            document.getElementById("formulier").innerHTML = `<p>✔️ ${data}</p>`;
+        if (afstand < 1500) {
+          const nu = new Date();
+          const datum = nu.toLocaleDateString("nl-NL");
+          const tijd = nu.toLocaleTimeString("nl-NL", {
+            hour: "2-digit",
+            minute: "2-digit",
           });
-        });
 
-      } else {
-        document.body.innerHTML = `<img src="breeclean-logo.webp" alt="Logo" class="logo">
-        <h2>Niet op locatie.</h2>
-        <p>Jouw coördinaten: ${lat}, ${lng}</p>
-        <p>Afstand tot werkplek: ${afstand.toFixed(2)} meter</p>`;
+          document.getElementById("bericht").innerText =
+            `Hallo, je doet op ${datum} om ${tijd} een registratieverzoek. Kies hieronder:`;
+
+          const formulier = document.getElementById("formulier");
+          formulier.style.display = "block";
+
+          formulier.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const actie = document.querySelector(
+              'input[name="actie"]:checked'
+            ).value;
+
+            const formData = new URLSearchParams();
+            formData.append("datum", datum);
+            formData.append("tijd", tijd);
+            formData.append("actie", actie);
+            formData.append("locatie", "Jupiterlaan 103");
+
+            fetch(
+              "https://script.google.com/macros/s/AKfycbzoNBrQrfxweD7Yb8UlV1j1yo_wogLDPUTyzUkIFrFs0vXeebas2XtvsWBUZsxmwCF2/exec",
+              {
+                method: "POST",
+                body: formData,
+              }
+            )
+              .then((response) => response.text())
+              .then((data) => {
+                document.getElementById(
+                  "formulier"
+                ).innerHTML = `<p>✔️ ${data}</p>`;
+              });
+          });
+        } else {
+          document.body.innerHTML = `
+            <img src="breeclean-logo.webp" alt="Logo" class="logo">
+            <h2>Niet op locatie.</h2>
+            <p>Jouw coördinaten: ${lat}, ${lng}</p>
+            <p>Afstand tot werkplek: ${afstand.toFixed(2)} meter</p>`;
+        }
+      },
+      () => {
+        document.body.innerHTML =
+          "<h2>Locatie kon niet bepaald worden. Sta locatietoegang toe.</h2>";
       }
-    }, () => {
-      document.body.innerHTML = "<h2>Locatie kon niet bepaald worden. Sta locatietoegang toe.</h2>";
-    });
+    );
   </script>
 </body>
 </html>
