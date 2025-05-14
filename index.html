@@ -128,88 +128,102 @@
   <p id="resultaat"></p>
 
   <script>
-const werkLat = 51.7876584;
-const werkLng = 4.6560781;
-const werkLat2 = 51.82603432951307;
-const werkLng2 = 4.797320871145971;
+    const werkLat = 51.7876584;
+    const werkLng = 4.6560781;
 
-navigator.geolocation.getCurrentPosition(
-  (pos) => {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const afstand1 = getAfstand(lat, lng, werkLat, werkLng);
-    const afstand2 = getAfstand(lat, lng, werkLat2, werkLng2);
-
-    document.getElementById("status").remove();
-
-    if (afstand1 < 1500 || afstand2 < 1500) {
-      const locatieNaam = afstand1 < afstand2 ? "Breeclean" : "Tweede locatie";
-
-      const nu = new Date();
-      const datum = nu.toLocaleDateString("nl-NL");
-      const tijd = nu.toLocaleTimeString("nl-NL", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-      document.getElementById("groet").innerText = getMomentGroet();
-      document.getElementById("bericht").innerHTML =
-        `Wil je op <strong>${datum}</strong> om <strong>${tijd}</strong> je tijd registreren? Geef dan hieronder aan of je wilt inklokken of uitklokken.`;
-
-      const formulier = document.getElementById("formulier");
-      formulier.style.display = "block";
-
-      const knoppen = document.querySelectorAll(".keuzeknop");
-      const hiddenInput = document.getElementById("actie");
-
-      knoppen.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          knoppen.forEach(b => b.classList.remove("selected"));
-          btn.classList.add("selected");
-          hiddenInput.value = btn.dataset.value;
-        });
-      });
-
-      formulier.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const actie = hiddenInput.value;
-        if (!actie) {
-          alert("Selecteer een actie.");
-          return;
-        }
-
-        const formData = new URLSearchParams();
-        formData.append("datum", datum);
-        formData.append("tijd", tijd);
-        formData.append("actie", actie);
-        formData.append("locatie", locatieNaam);
-
-        fetch(
-          "https://script.google.com/macros/s/AKfycbzoNBrQrfxweD7Yb8UlV1j1yo_wogLDPUTyzUkIFrFs0vXeebas2XtvsWBUZsxmwCF2/exec",
-          {
-            method: "POST",
-            body: formData,
-          }
-        )
-          .then((response) => response.text())
-          .then((data) => {
-            document.getElementById("formulier").innerHTML = `<p>✔️ ${data}</p>`;
-          });
-      });
-    } else {
-      document.body.innerHTML = `
-        <img src="breeclean-logo.webp" alt="Logo" class="logo">
-        <h2>Niet op locatie.</h2>
-        <p>Jouw coördinaten: ${lat}, ${lng}</p>
-        <p>Afstand tot werkplek: ${Math.min(afstand1, afstand2).toFixed(2)} meter</p>`;
+    function getAfstand(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+      const a =
+        Math.sin(Δφ / 2) ** 2 +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
     }
-  },
-  () => {
-    document.body.innerHTML =
-      "<h2>Locatie kon niet bepaald worden. Sta locatietoegang toe.</h2>";
-  }
-);
 
+    function getMomentGroet() {
+      const uur = new Date().getHours();
+      if (uur < 12) return "Goedemorgen!";
+      if (uur < 18) return "Goedemiddag!";
+      return "Goedenavond!";
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const afstand = getAfstand(lat, lng, werkLat, werkLng);
+
+        document.getElementById("status").remove();
+
+        if (afstand < 150000) {
+          const nu = new Date();
+          const datum = nu.toLocaleDateString("nl-NL");
+          const tijd = nu.toLocaleTimeString("nl-NL", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          document.getElementById("groet").innerText = getMomentGroet();
+          document.getElementById("bericht").innerHTML =
+            Wil je op <strong>${datum}</strong> om <strong>${tijd}</strong> je tijd registreren? Geef dan hieronder aan of je wilt inklokken of uitklokken.;
+
+          const formulier = document.getElementById("formulier");
+          formulier.style.display = "block";
+
+          const knoppen = document.querySelectorAll(".keuzeknop");
+          const hiddenInput = document.getElementById("actie");
+
+          knoppen.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              knoppen.forEach(b => b.classList.remove("selected"));
+              btn.classList.add("selected");
+              hiddenInput.value = btn.dataset.value;
+            });
+          });
+
+          formulier.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const actie = hiddenInput.value;
+            if (!actie) {
+              alert("Selecteer een actie.");
+              return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append("datum", datum);
+            formData.append("tijd", tijd);
+            formData.append("actie", actie);
+            formData.append("locatie", "Breeclean");
+
+            fetch(
+              "https://script.google.com/macros/s/AKfycbzoNBrQrfxweD7Yb8UlV1j1yo_wogLDPUTyzUkIFrFs0vXeebas2XtvsWBUZsxmwCF2/exec",
+              {
+                method: "POST",
+                body: formData,
+              }
+            )
+              .then((response) => response.text())
+              .then((data) => {
+                document.getElementById("formulier").innerHTML = <p>✔️ ${data}</p>;
+              });
+          });
+        } else {
+          document.body.innerHTML = 
+            <img src="breeclean-logo.webp" alt="Logo" class="logo">
+            <h2>Niet op locatie.</h2>
+            <p>Jouw coördinaten: ${lat}, ${lng}</p>
+            <p>Afstand tot werkplek: ${afstand.toFixed(2)} meter</p>;
+        }
+      },
+      () => {
+        document.body.innerHTML =
+          "<h2>Locatie kon niet bepaald worden. Sta locatietoegang toe.</h2>";
+      }
+    );
   </script>
 </body>
 </html>
