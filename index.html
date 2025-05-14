@@ -42,7 +42,6 @@
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const afstand = getAfstand(lat, lng, werkLat, werkLng);
-        console.log(Jouw coördinaten: ${lat}, ${lng}")
 
           if (afstand < 500) {
             const nu = new Date();
@@ -83,8 +82,9 @@
                 });
             });
           } else {
-            document.body.innerHTML =
-              "<h2>Je bent niet op de juiste locatie.</h2>";
+         document.body.innerHTML = `<h2>Niet op locatie.</h2>
+<p>Jouw coördinaten: ${lat}, ${lng}</p>
+<p>Afstand tot werkplek: ${afstand.toFixed(2)} meter</p>`;
           }
         },
         () => {
