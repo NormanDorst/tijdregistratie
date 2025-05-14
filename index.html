@@ -159,7 +159,7 @@
 
         document.getElementById("status").remove();
 
-        if (afstand < 1500) {
+        if (afstand < 150000) {
           const nu = new Date();
           const datum = nu.toLocaleDateString("nl-NL");
           const tijd = nu.toLocaleTimeString("nl-NL", {
@@ -169,7 +169,7 @@
 
           document.getElementById("groet").innerText = getMomentGroet();
           document.getElementById("bericht").innerHTML =
-            `Wil je op <strong>${datum}</strong> om <strong>${tijd}</strong> je tijd registreren? Geef dan hieronder aan of je wilt inklokken of uitklokken.`;
+            `Wil je op <strong>${datum}</strong> om <strong>${tijd}</strong> je tijd registreren voor <strong>Breeclean</strong>? Geef dan hieronder aan of je wilt inklokken of uitklokken.`;
 
           const formulier = document.getElementById("formulier");
           formulier.style.display = "block";
@@ -197,7 +197,7 @@
             formData.append("datum", datum);
             formData.append("tijd", tijd);
             formData.append("actie", actie);
-            formData.append("locatie", "Jupiterlaan 103");
+            formData.append("locatie", "Breeclean");
 
             fetch(
               "https://script.google.com/macros/s/AKfycbzoNBrQrfxweD7Yb8UlV1j1yo_wogLDPUTyzUkIFrFs0vXeebas2XtvsWBUZsxmwCF2/exec",
