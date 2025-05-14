@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tijdregistratie</title>
+  </head>
+  <body>
+    <h2>Bezig met locatie controleren...</h2>
+    <form id="formulier" style="display: none">
+      <p id="bericht"></p>
+      <label
+        ><input type="radio" name="actie" value="Inklokken" required />
+        Inklokken</label
+      ><br />
+      <label
+        ><input type="radio" name="actie" value="Uitklokken" required />
+        Uitklokken</label
+      ><br /><br />
+      <button type="submit">Verzenden</button>
+    </form>
+    <p id="resultaat"></p>
+
+    <script>
+      const werkLat = 51.791206;
+      const werkLng = 4.648228;
+
+      function getAfstand(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const φ1 = (lat1 * Math.PI) / 180;
+        const φ2 = (lat2 * Math.PI) / 180;
+        const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+        const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+          Math.sin(Δφ / 2) ** 2 +
+          Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const afstand = getAfstand(lat, lng, werkLat, werkLng);
+
+          if (afstand < 100) {
+            const nu = new Date();
+            const datum = nu.toLocaleDateString("nl-NL");
+            const tijd = nu.toLocaleTimeString("nl-NL", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            document.getElementById(
+              "bericht"
+            ).innerText = `Hallo, je doet op ${datum} om ${tijd} een registratieverzoek. Kies hieronder:`;
+
+            const formulier = document.getElementById("formulier");
+            formulier.style.display = "block";
+
+            formulier.addEventListener("submit", function (e) {
+              e.preventDefault();
+              const actie = document.querySelector(
+                'input[name="actie"]:checked'
+              ).value;
+
+              const formData = new URLSearchParams();
+              formData.append("datum", datum);
+              formData.append("tijd", tijd);
+              formData.append("actie", actie);
+              formData.append("locatie", "Jupiterlaan 103");
+
+              fetch("https://script.google.com/macros/s/AKfycbxXvIwoOEZL2uUPsy8UlCP8XOT4eSKHufLS1B_P7I-RYRVd0jPkM9bDbsz6mRCBJTvA/exec", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.text())
+                .then((data) => {
+                  document.getElementById(
+                    "formulier"
+                  ).innerHTML = `<p>✔️ ${data}</p>`;
+                });
+            });
+          } else {
+            document.body.innerHTML =
+              "<h2>Je bent niet op de juiste locatie.</h2>";
+          }
+        },
+        () => {
+          document.body.innerHTML =
+            "<h2>Locatie kon niet bepaald worden. Sta locatietoegang toe.</h2>";
+        }
+      );
+    </script>
+  </body>
+</html>
