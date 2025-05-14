@@ -10,14 +10,14 @@
       font-family: 'Roboto', sans-serif;
       margin: 0;
       padding: 0;
-      text-align: center;
       background-color: #f8f9fa;
       color: #333;
+      text-align: center;
     }
 
     img.logo {
       width: 150px;
-      margin: 0 auto;
+      margin: 20px auto;
       display: block;
     }
 
@@ -27,16 +27,14 @@
     }
 
     form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      margin-top: 0;
-      margin-bottom: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: calc(100% - 40px);
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
     #groet, #bericht {
       margin-top: 20px;
@@ -45,24 +43,38 @@
 
     .keuzeknoppen {
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       gap: 15px;
       margin-top: 20px;
+      flex-wrap: wrap;
     }
 
     .keuzeknop {
+      flex: 1 1 45%;
+      aspect-ratio: 1 / 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
       background-color: #7B8D99;
       color: white;
       border: none;
-      padding: 12px;
       border-radius: 8px;
-      font-size: 1.1em;
+      font-size: 1em;
       cursor: pointer;
       transition: background-color 0.2s;
+      padding: 10px;
+      max-width: 160px;
+    }
+
+    .keuzeknop img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 10px;
+    }
+
+    .keuzeknop span {
+      display: block;
     }
 
     .keuzeknop.selected {
@@ -73,11 +85,12 @@
       background-color: #007bff;
       color: white;
       font-size: 1em;
-      padding: 10px 20px;
+      padding: 12px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       margin-top: 20px;
+      width: 100%;
     }
 
     button[type="submit"]:hover {
@@ -96,10 +109,16 @@
   <form id="formulier" style="display: none;">
     <p id="groet"></p>
     <p id="bericht"></p>
-    
+
     <div class="keuzeknoppen">
-      <button type="button" class="keuzeknop" data-value="Inklokken">⏱️ Inklokken</button>
-      <button type="button" class="keuzeknop" data-value="Uitklokken">🛑 Uitklokken</button>
+      <button type="button" class="keuzeknop" data-value="Inklokken">
+        <img src="https://raw.githubusercontent.com/NormanDorst/tijdregistratie/main/checkin.png" alt="Check-in" />
+        <span>Inklokken</span>
+      </button>
+      <button type="button" class="keuzeknop" data-value="Uitklokken">
+        <img src="https://raw.githubusercontent.com/NormanDorst/tijdregistratie/main/checkout.png" alt="Check-out" />
+        <span>Uitklokken</span>
+      </button>
     </div>
 
     <input type="hidden" name="actie" id="actie" required />
@@ -149,8 +168,8 @@
           });
 
           document.getElementById("groet").innerText = getMomentGroet();
-          document.getElementById("bericht").innerText =
-            `Wil je op ${datum} om ${tijd} je tijd registreren? Geef dan hieronder aan of je wilt inklokken of uitklokken.`;
+          document.getElementById("bericht").innerHTML =
+            `Wil je op <strong>${datum}</strong> om <strong>${tijd}</strong> je tijd registreren? Geef dan hieronder aan of je wilt inklokken of uitklokken.`;
 
           const formulier = document.getElementById("formulier");
           formulier.style.display = "block";
