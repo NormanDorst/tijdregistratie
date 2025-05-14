@@ -87,8 +87,9 @@
           }
         },
         () => {
-          document.body.innerHTML =
-            "<h2>Locatie kon niet bepaald worden. Sta locatietoegang toe.</h2>";
+        document.body.innerHTML = `<h2>Niet op locatie.</h2>
+<p>Jouw coördinaten: ${lat}, ${lng}</p>
+<p>Afstand tot werkplek: ${afstand.toFixed(2)} meter</p>`;
         }
       );
     </script>
