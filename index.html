@@ -21,7 +21,6 @@
     <p id="resultaat"></p>
 
     <script>
-      console.log("het werkt")
       const werkLat = 51.791206;
       const werkLng = 4.648228;
 
@@ -43,6 +42,7 @@
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const afstand = getAfstand(lat, lng, werkLat, werkLng);
+        console.log(Jouw coördinaten: ${lat}, ${lng}")
 
           if (afstand < 500) {
             const nu = new Date();
