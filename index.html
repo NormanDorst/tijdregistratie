@@ -43,7 +43,7 @@
           const lng = pos.coords.longitude;
           const afstand = getAfstand(lat, lng, werkLat, werkLng);
 
-          if (afstand < 100) {
+          if (afstand < 500) {
             const nu = new Date();
             const datum = nu.toLocaleDateString("nl-NL");
             const tijd = nu.toLocaleTimeString("nl-NL", {
